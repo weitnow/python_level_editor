@@ -20,6 +20,7 @@ ROWS = 16
 MAX_COLS = 150
 TILE_SIZE = SCREEN_HEIGHT // ROWS
 TILE_TYPES = 21
+level = 0
 current_tile = 0
 scroll_left = False
 scroll_right = False
@@ -34,14 +35,20 @@ sky_img = pygame.image.load('img/Background/sky_cloud.png').convert_alpha()
 # store tiles in a list
 img_list = []
 for x in range(TILE_TYPES):
-    img = pygame.image.load(f'img/tile/{x}.png')
+    img = pygame.image.load(f'img/tile/{x}.png').convert_alpha()
     img = pygame.transform.scale(img, (TILE_SIZE, TILE_SIZE))
     img_list.append(img)
+
+save_img = pygame.image.load('img/save_btn.png').convert_alpha()
+load_img = pygame.image.load('img/load_btn.png').convert_alpha()
 
 # define colors
 GREEN = (144, 201, 120)
 WHITE = (255, 255, 255)
 RED = (200, 25, 25)
+
+#define font
+font = pygame.font.SysFont('Futura', 30)
 
 # create empty tile list
 world_data = []
@@ -52,6 +59,11 @@ for row in range(ROWS):
 # create ground
 for tile in range(MAX_COLS):
     world_data[ROWS - 1][tile] = 0
+
+#function for outputting text onto the screen
+def draw_text(text, font, text_col, x, y):
+    img = font.render(text, True, text_col)
+    screen.blit(img, (x, y))
 
 
 # create function for drawing background
@@ -83,6 +95,8 @@ def draw_world():
 
 
 # create buttons
+save_button = button.Button(SCREEN_WIDTH // 2, SCREEN_HEIGHT + LOWER_MARGIN - 50, save_img, 1)
+load_button = button.Button(SCREEN_WIDTH // 2 + 200, SCREEN_HEIGHT + LOWER_MARGIN - 50, load_img, 1)
 # make a button list
 button_list = []
 button_col = 0
@@ -103,7 +117,7 @@ while run:
     # scroll the map
     if scroll_left == True and scroll > 0:
         scroll -= 5 * scroll_speed
-    if scroll_right == True:
+    if scroll_right == True and scroll < (MAX_COLS * TILE_SIZE) - SCREEN_WIDTH:
         scroll += 5 * scroll_speed
 
 
@@ -132,6 +146,8 @@ while run:
             if pygame.mouse.get_pressed()[0] == 1:
                 if world_data[y][x] != current_tile:
                     world_data[y][x] = current_tile
+            if pygame.mouse.get_pressed()[2] == 1:
+                world_data[y][x] = -1
 
 
         if event.type == pygame.KEYUP:
@@ -145,6 +161,13 @@ while run:
     draw_bg()
     draw_grid()
     draw_world()
+
+    draw_text(f'Level: {level}', font, WHITE, 10, SCREEN_HEIGHT + LOWER_MARGIN - 90)
+    draw_text('Press W or S to change level', font, WHITE, 10, SCREEN_HEIGHT + LOWER_MARGIN - 60)
+
+    #save and load data
+    save_button.draw(screen)
+    load_button.draw(screen)
 
     # draw tile panel an tiles
     pygame.draw.rect(screen, GREEN, (SCREEN_WIDTH, 0, SIDE_MARGIN, SCREEN_HEIGHT))
